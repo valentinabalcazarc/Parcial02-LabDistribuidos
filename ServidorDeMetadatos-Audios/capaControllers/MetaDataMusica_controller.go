@@ -14,7 +14,7 @@ import (
 
 /**
  * @brief Controlador para la metadata de Musica.
- * 
+ *
  * Expone los servicios REST de Musica usando Gin.
  */
 type MetadataMusicaController struct {
@@ -23,7 +23,7 @@ type MetadataMusicaController struct {
 
 /**
  * @brief Constructor del controlador de MetadataMusica.
- * 
+ *
  * @param service Servicio de MetadataMusica que será inyectado.
  * @return *MetadataMusicaController Nueva instancia del controlador.
  */
@@ -31,11 +31,17 @@ func NewMetadataMusicaController(service *service.MetadataMusicaService) *Metada
 	return &MetadataMusicaController{service: service}
 }
 
+func (c *MetadataMusicaController) RegistrarRutas(r gin.IRouter) {
+	r.GET("/metadatosaudios/musica/:id", c.ConsultarMusica)
+	r.GET("/metadatosaudios/musicas", c.ListarMusica)
+	r.POST("/metadatosaudios/musica", c.RegistrarMusica)
+}
+
 /**
  * @brief Consulta una música por su ID.
- * 
- * Expone el endpoint GET /musica/:id.
- * 
+ *
+ * Expone el endpoint GET /metadatosaudios/musica/:id.
+ *
  * @param ctx Contexto de Gin que contiene la información de la petición HTTP.
  */
 func (this *MetadataMusicaController) ConsultarMusica(ctx *gin.Context) {
@@ -56,9 +62,9 @@ func (this *MetadataMusicaController) ConsultarMusica(ctx *gin.Context) {
 
 /**
  * @brief Lista todas las músicas disponibles.
- * 
- * Expone el endpoint GET /musicas.
- * 
+ *
+ * Expone el endpoint GET /metadatosaudios/musicas.
+ *
  * @param ctx Contexto de Gin que contiene la información de la petición HTTP.
  */
 func (this *MetadataMusicaController) ListarMusica(ctx *gin.Context) {
@@ -68,10 +74,10 @@ func (this *MetadataMusicaController) ListarMusica(ctx *gin.Context) {
 
 /**
  * @brief Registra una nueva música junto con su archivo de audio.
- * 
- * Expone el endpoint POST /musica.
+ *
+ * Expone el endpoint POST /metadatosaudios/musica.
  * Soporta tanto peticiones JSON puras como multipart/form-data (con archivo binario).
- * 
+ *
  * @param ctx Contexto de Gin.
  */
 func (this *MetadataMusicaController) RegistrarMusica(ctx *gin.Context) {

@@ -14,7 +14,7 @@ import (
 
 /**
  * @brief Controlador para la metadata de RuidoBlanco.
- * 
+ *
  * Expone los servicios REST de RuidoBlanco usando Gin.
  */
 type MetadataRuidoBlancoController struct {
@@ -23,7 +23,7 @@ type MetadataRuidoBlancoController struct {
 
 /**
  * @brief Constructor del controlador de MetadataRuidoBlanco.
- * 
+ *
  * @param service Servicio de MetadataRuidoBlanco que será inyectado.
  * @return *MetadataRuidoBlancoController Nueva instancia del controlador.
  */
@@ -31,11 +31,17 @@ func NewMetadataRuidoBlancoController(service *service.MetadataRuidoBlancoServic
 	return &MetadataRuidoBlancoController{service: service}
 }
 
+func (c *MetadataRuidoBlancoController) RegistrarRutas(r gin.IRouter) {
+	r.GET("/metadatosaudios/ruidoblanco/:id", c.ConsultarRuidoBlanco)
+	r.GET("/metadatosaudios/ruidosblancos", c.ListarRuidoBlanco)
+	r.POST("/metadatosaudios/ruidoblanco", c.RegistrarRuidoBlanco)
+}
+
 /**
  * @brief Consulta un ruido blanco por su ID.
- * 
- * Expone el endpoint GET /ruidoblanco/:id.
- * 
+ *
+ * Expone el endpoint GET /metadatosaudios/ruidoblanco/:id.
+ *
  * @param ctx Contexto de Gin que contiene la información de la petición HTTP.
  */
 func (this *MetadataRuidoBlancoController) ConsultarRuidoBlanco(ctx *gin.Context) {
@@ -56,9 +62,9 @@ func (this *MetadataRuidoBlancoController) ConsultarRuidoBlanco(ctx *gin.Context
 
 /**
  * @brief Lista todos los ruidos blancos disponibles.
- * 
- * Expone el endpoint GET /ruidosblancos.
- * 
+ *
+ * Expone el endpoint GET /metadatosaudios/ruidosblancos.
+ *
  * @param ctx Contexto de Gin que contiene la información de la petición HTTP.
  */
 func (this *MetadataRuidoBlancoController) ListarRuidoBlanco(ctx *gin.Context) {
@@ -68,9 +74,9 @@ func (this *MetadataRuidoBlancoController) ListarRuidoBlanco(ctx *gin.Context) {
 
 /**
  * @brief Registra un nuevo ruido blanco junto con su archivo de audio.
- * 
- * Expone el endpoint POST /ruidoblanco.
- * 
+ *
+ * Expone el endpoint POST /metadatosaudios/ruidoblanco.
+ *
  * @param ctx Contexto de Gin.
  */
 func (this *MetadataRuidoBlancoController) RegistrarRuidoBlanco(ctx *gin.Context) {

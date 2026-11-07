@@ -30,6 +30,12 @@ func NewEstadisticasController(service *capaservices.EstadisticasService) *Estad
 	}
 }
 
+func (c *EstadisticasController) RegistrarRutas(r gin.IRouter) {
+	r.GET("/estadisticas/cliente/:cliente", c.ConsultarReproduccionesCliente)
+	r.GET("/estadisticas/audios", c.ConsultarRankingGlobal)
+	r.GET("/estadisticas/historial", c.ConsultarHistorial)
+}
+
 /**
  * @brief Obtiene los audios reproducidos por un cliente y la cantidad de veces.
  *

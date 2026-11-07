@@ -31,6 +31,10 @@ func NewAudioController(service *service.AudioService) *AudioController {
 	return &AudioController{service: service}
 }
 
+func (c *AudioController) RegistrarRutas(r gin.IRouter) {
+	r.POST("/metadatosaudios/audio", c.GuardarAudio)
+}
+
 /**
  * @brief Manejador Gin para guardar un archivo de audio físico.
  *

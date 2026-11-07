@@ -14,7 +14,7 @@ import (
 
 /**
  * @brief Controlador para la metadata de Podcast.
- * 
+ *
  * Expone los servicios REST de Podcast usando Gin.
  */
 type MetadataPodcastController struct {
@@ -23,7 +23,7 @@ type MetadataPodcastController struct {
 
 /**
  * @brief Constructor del controlador de MetadataPodcast.
- * 
+ *
  * @param service Servicio de MetadataPodcast que será inyectado.
  * @return *MetadataPodcastController Nueva instancia del controlador.
  */
@@ -31,11 +31,17 @@ func NewMetadataPodcastController(service *service.MetadataPodcastService) *Meta
 	return &MetadataPodcastController{service: service}
 }
 
+func (c *MetadataPodcastController) RegistrarRutas(r gin.IRouter) {
+	r.GET("/metadatosaudios/podcast/:id", c.ConsultarPodcast)
+	r.GET("/metadatosaudios/podcasts", c.ListarPodcasts)
+	r.POST("/metadatosaudios/podcast", c.RegistrarPodcast)
+}
+
 /**
  * @brief Consulta un podcast por su ID.
- * 
- * Expone el endpoint GET /podcast/:id.
- * 
+ *
+ * Expone el endpoint GET /metadatosaudios/podcast/:id.
+ *
  * @param ctx Contexto de Gin que contiene la información de la petición HTTP.
  */
 func (this *MetadataPodcastController) ConsultarPodcast(ctx *gin.Context) {
@@ -56,9 +62,9 @@ func (this *MetadataPodcastController) ConsultarPodcast(ctx *gin.Context) {
 
 /**
  * @brief Lista todos los podcasts disponibles.
- * 
- * Expone el endpoint GET /podcasts.
- * 
+ *
+ * Expone el endpoint GET /metadatosaudios/podcasts.
+ *
  * @param ctx Contexto de Gin que contiene la información de la petición HTTP.
  */
 func (this *MetadataPodcastController) ListarPodcasts(ctx *gin.Context) {
@@ -68,9 +74,9 @@ func (this *MetadataPodcastController) ListarPodcasts(ctx *gin.Context) {
 
 /**
  * @brief Registra un nuevo podcast junto con su archivo de audio.
- * 
- * Expone el endpoint POST /podcast.
- * 
+ *
+ * Expone el endpoint POST /metadatosaudios/podcast.
+ *
  * @param ctx Contexto de Gin.
  */
 func (this *MetadataPodcastController) RegistrarPodcast(ctx *gin.Context) {

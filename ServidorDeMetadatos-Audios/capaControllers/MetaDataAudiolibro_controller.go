@@ -14,7 +14,7 @@ import (
 
 /**
  * @brief Controlador para la metadata de audiolibros.
- * 
+ *
  * Expone los servicios REST de audiolibro usando Gin.
  */
 type MetadataAudiolibroController struct {
@@ -23,7 +23,7 @@ type MetadataAudiolibroController struct {
 
 /**
  * @brief Constructor del controlador de MetadataAudiolibro.
- * 
+ *
  * @param service Servicio de MetadataAudiolibro que será inyectado.
  * @return *MetadataAudiolibroController Nueva instancia del controlador.
  */
@@ -31,11 +31,17 @@ func NewMetadataAudiolibroController(service *service.MetadataAudiolibroService)
 	return &MetadataAudiolibroController{service: service}
 }
 
+func (c *MetadataAudiolibroController) RegistrarRutas(r gin.IRouter) {
+	r.GET("/metadatosaudios/audiolibro/:id", c.ConsultarAudiolibro)
+	r.GET("/metadatosaudios/audiolibros", c.ListarAudiolibros)
+	r.POST("/metadatosaudios/audiolibro", c.RegistrarAudiolibro)
+}
+
 /**
  * @brief Consulta un audiolibro por su ID.
- * 
- * Expone el endpoint GET /audiolibro/:id.
- * 
+ *
+ * Expone el endpoint GET /metadatosaudios/audiolibro/:id.
+ *
  * @param ctx Contexto de Gin que contiene la información de la petición HTTP.
  */
 func (this *MetadataAudiolibroController) ConsultarAudiolibro(ctx *gin.Context) {
@@ -56,9 +62,9 @@ func (this *MetadataAudiolibroController) ConsultarAudiolibro(ctx *gin.Context) 
 
 /**
  * @brief Lista todos los audiolibros disponibles.
- * 
- * Expone el endpoint GET /audiolibros.
- * 
+ *
+ * Expone el endpoint GET /metadatosaudios/audiolibros.
+ *
  * @param ctx Contexto de Gin que contiene la información de la petición HTTP.
  */
 func (this *MetadataAudiolibroController) ListarAudiolibros(ctx *gin.Context) {
@@ -68,9 +74,9 @@ func (this *MetadataAudiolibroController) ListarAudiolibros(ctx *gin.Context) {
 
 /**
  * @brief Registra un nuevo audiolibro junto con su archivo de audio.
- * 
- * Expone el endpoint POST /audiolibro.
- * 
+ *
+ * Expone el endpoint POST /metadatosaudios/audiolibro.
+ *
  * @param ctx Contexto de Gin.
  */
 func (this *MetadataAudiolibroController) RegistrarAudiolibro(ctx *gin.Context) {

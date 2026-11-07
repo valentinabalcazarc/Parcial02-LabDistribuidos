@@ -1,61 +1,59 @@
 package main
 
 import (
+	"context"
+	"errors"
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
 	repository "servidorMetadatos/capaAccesoADatos/repository"
 	controller "servidorMetadatos/capaControllers"
 	service "servidorMetadatos/capaServices/services"
+	"strconv"
+	"syscall"
+	"time"
+
+	"servidorMetadatos/discovery"
+	"servidorMetadatos/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
+const nombreServicio = "ms-servidorDeMetadatos-Audios"
+
 func main() {
-	// ==========================================
-	// 1. INICIALIZACIÓN DE SERVICIO DE AUDIOS FÍSICOS
-	// ==========================================
-	// Este servicio centraliza el guardado de archivos binarios (.mp3)
-	// para que ningún controlador repita lógica de disco.
+	puerto, _ := strconv.Atoi(env("PORT", "8081"))
+	host := env("SERVICE_HOST", "127.0.0.1")
+	consulAddr := env("CONSUL_ADDR", "127.0.0.1:8500")
+	secreto := env("GATEWAY_SECRET", "secreto-gateway-2026")
+
 	audioService := service.NewAudioService()
 	audioController := controller.NewAudioController(audioService)
 
-	// ==========================================
-	// 2. TIPOS DE AUDIO
-	// ==========================================
 	tipoAudioRepository := repository.NewTipoAudioRepository()
 	tipoAudioService := service.NewTipoAudioService(tipoAudioRepository)
 	tipoAudioController := controller.NewTipoAudioController(tipoAudioService)
 
-	// ==========================================
-	// 3. AUDIOLIBRO
-	// ==========================================
 	audiolibroRepository := repository.NewMetadataAudiolibroRepository()
 	audiolibroService := service.NewMetadataAudiolibroService(audiolibroRepository, audioService)
 	audiolibroController := controller.NewMetadataAudiolibroController(audiolibroService)
 
-	// ==========================================
-	// 4. MÚSICA
-	// ==========================================
 	musicaRepository := repository.NewMetadataMusicaRepository()
 	musicaService := service.NewMetadataMusicaService(musicaRepository, audioService)
 	musicaController := controller.NewMetadataMusicaController(musicaService)
 
-	// ==========================================
-	// 5. PODCAST
-	// ==========================================
 	podcastRepository := repository.NewMetadataPodcastRepository()
 	podcastService := service.NewMetadataPodcastService(podcastRepository, audioService)
 	podcastController := controller.NewMetadataPodcastController(podcastService)
 
-	// ==========================================
-	// 6. RUIDO BLANCO
-	// ==========================================
 	ruidoBlancoRepository := repository.NewMetadataRuidoBlancoRepository()
 	ruidoBlancoService := service.NewMetadataRuidoBlancoService(ruidoBlancoRepository, audioService)
 	ruidoBlancoController := controller.NewMetadataRuidoBlancoController(ruidoBlancoService)
 
-	// ==========================================
-	// 7. ROUTER GIN Y MIDDLEWARES
-	// ==========================================
 	router := gin.Default()
+	router.Use(middleware.FiltroGateway(secreto))
 
 	// Middleware CORS para habilitar peticiones desde el cliente web
 	router.Use(func(c *gin.Context) {
@@ -69,31 +67,41 @@ func main() {
 		c.Next()
 	})
 
-	// --- Rutas generales ---
-	router.GET("/tipos-audio", tipoAudioController.ListarTipos)
+	audioController.RegistrarRutas(router)
+	tipoAudioController.RegistrarRutas(router)
+	audiolibroController.RegistrarRutas(router)
+	musicaController.RegistrarRutas(router)
+	podcastController.RegistrarRutas(router)
+	ruidoBlancoController.RegistrarRutas(router)
 
-	// --- Rutas de consulta por ID (GET en singular) ---
-	router.GET("/audiolibro/:id", audiolibroController.ConsultarAudiolibro)
-	router.GET("/musica/:id", musicaController.ConsultarMusica)
-	router.GET("/podcast/:id", podcastController.ConsultarPodcast)
-	router.GET("/ruidoblanco/:id", ruidoBlancoController.ConsultarRuidoBlanco)
+	srv := &http.Server{Addr: fmt.Sprintf(":%d", puerto), Handler: router}
+	go func() {
+		log.Printf("%s escuchando en :%d", nombreServicio, puerto)
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("error en el servidor: %v", err)
+		}
+	}()
 
-	// --- Rutas de listado completo (GET en plural) ---
-	router.GET("/audiolibros", audiolibroController.ListarAudiolibros)
-	router.GET("/musicas", musicaController.ListarMusica)
-	router.GET("/podcasts", podcastController.ListarPodcasts)
-	router.GET("/ruidosblancos", ruidoBlancoController.ListarRuidoBlanco)
+	// Al lanzarse, el microservicio se registra en el directorio de descubrimiento.
+	registro, err := discovery.Registrar(consulAddr, nombreServicio, host, puerto)
+	if err != nil {
+		log.Fatalf("no fue posible registrarse en Consul: %v", err)
+	}
 
-	// --- Rutas de registro unificado (POST: Metadatos + Archivo físico) ---
-	// La llamada a metadatos coordina internamente el guardado del audio
-	router.POST("/musica", musicaController.RegistrarMusica)
-	router.POST("/audiolibro", audiolibroController.RegistrarAudiolibro)
-	router.POST("/podcast", podcastController.RegistrarPodcast)
-	router.POST("/ruidoblanco", ruidoBlancoController.RegistrarRuidoBlanco)
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	<-stop
 
-	// --- Ruta independiente para subir solo archivos de audio físicos ---
-	router.POST("/audio", audioController.GuardarAudio)
+	registro.Desregistrar()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	_ = srv.Shutdown(ctx)
 
-	// Iniciar servidor en el puerto 8081
-	router.Run(":8081")
+}
+
+func env(clave, porDefecto string) string {
+	if v := os.Getenv(clave); v != "" {
+		return v
+	}
+	return porDefecto
 }

@@ -8,7 +8,7 @@ import (
 
 /**
  * @brief Controlador para los tipos de audio.
- * 
+ *
  * Gestiona las peticiones HTTP relacionadas con la entidad TipoAudio.
  */
 type TipoAudioController struct {
@@ -17,7 +17,7 @@ type TipoAudioController struct {
 
 /**
  * @brief Constructor del controlador de TipoAudio.
- * 
+ *
  * @param service Servicio de TipoAudio que será inyectado.
  * @return *TipoAudioController Nueva instancia del controlador.
  */
@@ -25,11 +25,15 @@ func NewTipoAudioController(service *service.TipoAudioService) *TipoAudioControl
 	return &TipoAudioController{service: service}
 }
 
+func (c *TipoAudioController) RegistrarRutas(r gin.IRouter) {
+	r.GET("/metadatosaudios/tipos-audio", c.ListarTipos)
+}
+
 /**
  * @brief Lista todos los tipos de audio.
- * 
- * Expone el endpoint GET /tipos-audio.
- * 
+ *
+ * Expone el endpoint GET /metadatosaudios/tipos-audio.
+ *
  * @param ctx Contexto de Gin que contiene la información de la petición.
  */
 func (c *TipoAudioController) ListarTipos(ctx *gin.Context) {

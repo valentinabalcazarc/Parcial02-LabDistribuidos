@@ -1,7 +1,7 @@
 /**
  * @file main.go
  * @brief Punto de entrada principal para el Servidor de Estadísticas.
- * 
+ *
  * Inicia la conexión con RabbitMQ para procesar eventos asíncronos de reproducción
  * y levanta un servidor HTTP Gin en el puerto :8082 para permitir al cliente consultar
  * los audios que ha reproducido y sus conteos (Requerimiento d).
@@ -9,8 +9,16 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"strconv"
+	"syscall"
+	"time"
 
 	capaaccesoadatos "servidorEstadisticas/capaAccesoADatos"
 	capacontrollers "servidorEstadisticas/capaControllers"
@@ -19,9 +27,19 @@ import (
 	consumer "servidorEstadisticas/componenteRecibirMensajes"
 
 	"github.com/gin-gonic/gin"
+
+	"servidorEstadisticas/discovery"
+	"servidorEstadisticas/middleware"
 )
 
+const nombreServicio = "ms-servidorDeEstadisticas"
+
 func main() {
+	puerto, _ := strconv.Atoi(env("PORT", "8082"))
+	host := env("SERVICE_HOST", "127.0.0.1")
+	consulAddr := env("CONSUL_ADDR", "127.0.0.1:8500")
+	secreto := env("GATEWAY_SECRET", "secreto-gateway-2026")
+
 	fmt.Println("==================================================")
 	fmt.Println("🚀 Iniciando Servidor de Estadísticas...")
 	fmt.Println("==================================================")
@@ -47,8 +65,9 @@ func main() {
 		}
 	}
 
-	// 3. Servidor HTTP Gin para Consultas del Cliente (Requerimiento d)
+	// 3. Servidor HTTP Gin para Consultas del Cliente
 	router := gin.Default()
+	router.Use(middleware.FiltroGateway(secreto))
 
 	// Middleware CORS para permitir consultas desde clientes web
 	router.Use(func(c *gin.Context) {
@@ -62,18 +81,35 @@ func main() {
 		c.Next()
 	})
 
-	// --- Rutas de Consulta de Estadísticas ---
-	// Requerimiento (d): Un cliente puede ver los audios que ha reproducido y cuántas veces
-	router.GET("/estadisticas/cliente/:cliente", estadisticasController.ConsultarReproduccionesCliente)
+	estadisticasController.RegistrarRutas(router)
 
-	// Estadísticas globales de popularidad de audios
-	router.GET("/estadisticas/audios", estadisticasController.ConsultarRankingGlobal)
+	srv := &http.Server{Addr: fmt.Sprintf(":%d", puerto), Handler: router}
+	go func() {
+		log.Printf("%s escuchando en :%d", nombreServicio, puerto)
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("error en el servidor: %v", err)
+		}
+	}()
 
-	// Historial de eventos recientes
-	router.GET("/estadisticas/historial", estadisticasController.ConsultarHistorial)
-
-	fmt.Println("📡 Servidor HTTP de Estadísticas escuchando en el puerto :8082")
-	if err := router.Run(":8082"); err != nil {
-		log.Fatalf("Error fatal iniciando servidor HTTP en :8082: %v", err)
+	// Al lanzarse, el microservicio se registra en el directorio de descubrimiento.
+	registro, err := discovery.Registrar(consulAddr, nombreServicio, host, puerto)
+	if err != nil {
+		log.Fatalf("no fue posible registrarse en Consul: %v", err)
 	}
+
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	<-stop
+
+	registro.Desregistrar()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	_ = srv.Shutdown(ctx)
+}
+
+func env(clave, porDefecto string) string {
+	if v := os.Getenv(clave); v != "" {
+		return v
+	}
+	return porDefecto
 }
