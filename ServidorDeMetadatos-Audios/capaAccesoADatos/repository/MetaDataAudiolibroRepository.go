@@ -82,3 +82,24 @@ func (this *MetadataAudiolibroRepository) BuscarAudiolibro(id int) (entity.MetaD
 func (this *MetadataAudiolibroRepository) ListarAudiolibros() []entity.MetaDataAudiolibro {
 	return this.vectorMetadataAudiolibros
 }
+
+/**
+ * @brief Guarda un nuevo audiolibro en memoria.
+ * 
+ * @param audiolibro Entidad a almacenar.
+ * @return entity.MetaDataAudiolibro Entidad con ID asignado.
+ */
+func (this *MetadataAudiolibroRepository) GuardarAudiolibro(audiolibro entity.MetaDataAudiolibro) entity.MetaDataAudiolibro {
+	if audiolibro.GetId() <= 0 {
+		maxId := 0
+		for _, a := range this.vectorMetadataAudiolibros {
+			if a.GetId() > maxId {
+				maxId = a.GetId()
+			}
+		}
+		audiolibro.SetId(maxId + 1)
+	}
+
+	this.vectorMetadataAudiolibros = append(this.vectorMetadataAudiolibros, audiolibro)
+	return audiolibro
+}

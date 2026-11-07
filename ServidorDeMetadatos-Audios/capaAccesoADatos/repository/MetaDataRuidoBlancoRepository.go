@@ -5,7 +5,7 @@ import "servidorMetadatos/capaAccesoADatos/entity"
 /**
  * @brief Repositorio que mantiene en memoria el slice de ruido blanco.
  * 
- * Expone las operaciones de búsqueda y carga de ruido blanco.
+ * Expone las operaciones de búsqueda, registro y carga de ruido blanco.
  */
 type MetadataRuidoBlancoRepository struct {
 	vectorMetadataRuidoBlanco []entity.MetaDataRuidoBlanco
@@ -81,4 +81,25 @@ func (this *MetadataRuidoBlancoRepository) BuscarRuidoBlanco(id int) (entity.Met
  */
 func (this *MetadataRuidoBlancoRepository) ListarRuidoBlanco() []entity.MetaDataRuidoBlanco {
 	return this.vectorMetadataRuidoBlanco
+}
+
+/**
+ * @brief Guarda un nuevo registro de ruido blanco en memoria.
+ * 
+ * @param ruido Entidad a almacenar.
+ * @return entity.MetaDataRuidoBlanco Entidad con ID asignado.
+ */
+func (this *MetadataRuidoBlancoRepository) GuardarRuidoBlanco(ruido entity.MetaDataRuidoBlanco) entity.MetaDataRuidoBlanco {
+	if ruido.GetId() <= 0 {
+		maxId := 0
+		for _, r := range this.vectorMetadataRuidoBlanco {
+			if r.GetId() > maxId {
+				maxId = r.GetId()
+			}
+		}
+		ruido.SetId(maxId + 1)
+	}
+
+	this.vectorMetadataRuidoBlanco = append(this.vectorMetadataRuidoBlanco, ruido)
+	return ruido
 }

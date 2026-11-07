@@ -1,20 +1,21 @@
 /**
  * @file Audio_controller.go
- * @brief Definición del controlador para manejar las peticiones HTTP de audios.
+ * @brief Definición del controlador para manejar las peticiones HTTP de audios usando Gin.
  */
 package capacontrollers
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	dtos "servidorMetadatos/capaServices/dto"
 	service "servidorMetadatos/capaServices/services"
+
+	"github.com/gin-gonic/gin"
 )
 
 /**
  * @struct AudioController
- * @brief Controlador que maneja las solicitudes HTTP relacionadas con los audios.
+ * @brief Controlador que maneja las solicitudes HTTP relacionadas con el almacenamiento de audios.
  */
 type AudioController struct {
 	service *service.AudioService
@@ -31,65 +32,59 @@ func NewAudioController(service *service.AudioService) *AudioController {
 }
 
 /**
- * @brief Manejador HTTP para guardar un archivo de audio.
+ * @brief Manejador Gin para guardar un archivo de audio físico.
  *
  * Este método recibe una petición POST multipart/form-data con el archivo de audio
- * y su nombre, y delega la tarea de guardado al servicio.
+ * y su nombre opcional, delegando la tarea de guardado físico al servicio de audio.
  *
- * @param w http.ResponseWriter para enviar la respuesta HTTP.
- * @param r *http.Request petición HTTP recibida.
+ * @param ctx Contexto de Gin.
  */
-func (thisC *AudioController) GuardarAudio(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+func (thisC *AudioController) GuardarAudio(ctx *gin.Context) {
+	fileHeader, err := ctx.FormFile("archivo")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"codigo":  http.StatusBadRequest,
+			"mensaje": "Error leyendo el archivo del formulario (campo 'archivo'): " + err.Error(),
+		})
 		return
 	}
 
-	r.ParseMultipartForm(50 << 20)
-	file, _, err := r.FormFile("Archivo")
+	file, err := fileHeader.Open()
 	if err != nil {
-		http.Error(w, "Error leyendo el archivo", http.StatusBadRequest)
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"codigo":  http.StatusInternalServerError,
+			"mensaje": "Error al abrir el archivo recibido: " + err.Error(),
+		})
 		return
 	}
 	defer file.Close()
 
-	data, _ := io.ReadAll(file)
+	data, err := io.ReadAll(file)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"codigo":  http.StatusInternalServerError,
+			"mensaje": "Error al leer los bytes del archivo: " + err.Error(),
+		})
+		return
+	}
+
+	nombreArchivo := ctx.DefaultPostForm("nombre_archivo", fileHeader.Filename)
 	dto := dtos.AudioDTO{
-		NombreArchivo: r.FormValue("nombre_archivo"),
+		NombreArchivo: nombreArchivo,
 	}
 
 	err = thisC.service.GuardarAudio(dto, data)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error al guardar: %v", err), http.StatusInternalServerError)
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"codigo":  http.StatusInternalServerError,
+			"mensaje": "Error al guardar el archivo en disco: " + err.Error(),
+		})
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Audio guardado exitosamente"))
-}
-
-/**
- * @brief Manejador HTTP para obtener un archivo de audio.
- *
- * Este método recibe una petición GET con el nombre del archivo de audio como parámetro de consulta
- * y lo devuelve como respuesta HTTP.
- *
- * @param w http.ResponseWriter para enviar la respuesta HTTP (el archivo de audio).
- * @param r *http.Request petición HTTP recibida.
- */
-func (thisC *AudioController) ObtenerAudio(w http.ResponseWriter, r *http.Request) {
-	nombreArchivo := r.URL.Query().Get("nombre")
-	if nombreArchivo == "" {
-		http.Error(w, "Parámetro 'nombre' requerido", http.StatusBadRequest)
-		return
-	}
-
-	bytesAudio, err := thisC.service.ObtenerAudio(nombreArchivo)
-	if err != nil {
-		http.Error(w, "Archivo no encontrado", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "audio/mpeg")
-	w.Write(bytesAudio)
+	ctx.JSON(http.StatusOK, gin.H{
+		"codigo":         http.StatusOK,
+		"mensaje":        "Audio guardado exitosamente",
+		"nombre_archivo": nombreArchivo,
+	})
 }

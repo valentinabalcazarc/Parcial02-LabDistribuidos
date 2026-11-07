@@ -5,7 +5,7 @@ import "servidorMetadatos/capaAccesoADatos/entity"
 /**
  * @brief Repositorio que mantiene en memoria el slice de música.
  * 
- * Expone las operaciones de búsqueda y carga para música.
+ * Expone las operaciones de búsqueda, registro y carga para música.
  */
 type MetadataMusicaRepository struct {
 	vectorMetadataMusica []entity.MetaDataMusica
@@ -81,4 +81,27 @@ func (this *MetadataMusicaRepository) BuscarMusica(id int) (entity.MetaDataMusic
  */
 func (this *MetadataMusicaRepository) ListarMusica() []entity.MetaDataMusica {
 	return this.vectorMetadataMusica
+}
+
+/**
+ * @brief Guarda una nueva pista musical en memoria.
+ * 
+ * Si la entidad no tiene ID asignado, calcula automáticamente el siguiente ID.
+ * 
+ * @param musica Entidad a almacenar.
+ * @return entity.MetaDataMusica Entidad almacenada con su ID asignado.
+ */
+func (this *MetadataMusicaRepository) GuardarMusica(musica entity.MetaDataMusica) entity.MetaDataMusica {
+	if musica.GetId() <= 0 {
+		maxId := 0
+		for _, m := range this.vectorMetadataMusica {
+			if m.GetId() > maxId {
+				maxId = m.GetId()
+			}
+		}
+		musica.SetId(maxId + 1)
+	}
+
+	this.vectorMetadataMusica = append(this.vectorMetadataMusica, musica)
+	return musica
 }

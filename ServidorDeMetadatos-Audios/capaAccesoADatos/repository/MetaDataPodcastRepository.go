@@ -5,7 +5,7 @@ import "servidorMetadatos/capaAccesoADatos/entity"
 /**
  * @brief Repositorio que mantiene en memoria el slice de podcasts.
  * 
- * Expone las operaciones de búsqueda y carga de podcasts.
+ * Expone las operaciones de búsqueda, registro y carga de podcasts.
  */
 type MetadataPodcastRepository struct {
 	vectorMetadataPodcasts []entity.MetaDataPodcast
@@ -79,4 +79,25 @@ func (this *MetadataPodcastRepository) BuscarPodcast(id int) (entity.MetaDataPod
  */
 func (this *MetadataPodcastRepository) ListarPodcasts() []entity.MetaDataPodcast {
 	return this.vectorMetadataPodcasts
+}
+
+/**
+ * @brief Guarda un nuevo podcast en memoria.
+ * 
+ * @param podcast Entidad a almacenar.
+ * @return entity.MetaDataPodcast Entidad con ID asignado.
+ */
+func (this *MetadataPodcastRepository) GuardarPodcast(podcast entity.MetaDataPodcast) entity.MetaDataPodcast {
+	if podcast.GetId() <= 0 {
+		maxId := 0
+		for _, p := range this.vectorMetadataPodcasts {
+			if p.GetId() > maxId {
+				maxId = p.GetId()
+			}
+		}
+		podcast.SetId(maxId + 1)
+	}
+
+	this.vectorMetadataPodcasts = append(this.vectorMetadataPodcasts, podcast)
+	return podcast
 }
