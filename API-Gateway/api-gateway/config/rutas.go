@@ -17,4 +17,12 @@ var Rutas = []Ruta{
 	// ServidorDeEstadisticas (puerto :8082)
 	// Registrado en Consul como "ms-servidorDeEstadisticas"
 	{Prefijo: "/api/estadisticas", Servicio: "ms-servidorDeEstadisticas", Destino: "/estadisticas"},
+
+	// ServidorDeReacciones (puerto :5000)
+	// Registrado en Consul como "ms-servidorDeReacciones"
+	{Prefijo: "/api/reacciones", Servicio: "ms-servidorDeReacciones", Destino: "/reacciones"},
+
+	// ServidorSuscripciones (puerto :8083)
+	// Registrado en Consul como "ms-servidorSuscripciones"
+	{Prefijo: "/api/pasarela", Servicio: "ms-servidorSuscripciones", Destino: "/api"},
 }
