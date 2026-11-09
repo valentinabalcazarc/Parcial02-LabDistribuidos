@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Audios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="suscripciones/tailwind.config.js"></script>
+    <link rel="stylesheet" href="audios/estilos.css">
+</head>
+
+<body class="bg-[#f5f5f7] text-gray-800 font-sans min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-gray-200">
+        <div class="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
+            <h1 class="text-lg font-semibold text-gray-900 tracking-tight">Catálogo de Audios</h1>
+            <nav class="flex items-center gap-4">
+                <a href="audios.html"
+                    class="text-sm font-semibold text-accent border-b-2 border-accent pb-0.5">Catálogo de Audios</a>
+                <a href="suscripciones.html"
+                    class="text-sm font-medium text-gray-600 hover:text-accent transition-colors">Suscripciones</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Aquí se pintan los tipos de audio, la lista de audios y la ficha técnica -->
+    <main id="contenido" class="max-w-7xl mx-auto px-6 py-10 space-y-6" aria-live="polite">
+        <p class="texto-tenue">Cargando…</p>
+    </main>
+
+    <!-- Cliente de streaming gRPC-Web (se genera con webpack) y su envoltorio pedirCancion() -->
+    <script src="bundle.js"></script>
+    <script src="streamingAudios/funciones.js"></script>
+
+    <script src="audios/config.js"></script>
+    <script src="audios/tipos.js"></script>
+    <script src="audios/api.js"></script>
+    <script src="audios/app.js"></script>
+</body>
+
+</html>

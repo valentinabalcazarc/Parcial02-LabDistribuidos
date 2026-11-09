@@ -1,18 +1,22 @@
 // funcion.js - wrapper simple para llamar a la implementación del streaming
 
-function pedirCancion(titulo, formato) {
+/**
+ * Pide una canción por streaming. `opciones` es opcional y se pasa tal cual a la implementación
+ * (reproductor, onFragmento, onRecibido, onError). Devuelve { detener() } o undefined si no hay implementación.
+ */
+function pedirCancion(titulo, formato, opciones) {
     // Prioridad de implementaciones conocidas
     if (typeof window.iniciar_streaming_cancion === 'function') {
-        return window.iniciar_streaming_cancion(titulo, formato);
+        return window.iniciar_streaming_cancion(titulo, formato, opciones);
     }
     if (typeof window.iniciar_streaming_cancion_impl === 'function') {
-        return window.iniciar_streaming_cancion_impl(titulo, formato);
+        return window.iniciar_streaming_cancion_impl(titulo, formato, opciones);
     }
     if (typeof window.iniciarStreamGRPCImpl === 'function') {
-        return window.iniciarStreamGRPCImpl(titulo, formato);
+        return window.iniciarStreamGRPCImpl(titulo, formato, opciones);
     }
     if (typeof window.iniciarStreamGRPC === 'function') {
-        return window.iniciarStreamGRPC(titulo, formato);
+        return window.iniciarStreamGRPC(titulo, formato, opciones);
     }
 
     console.error('No se encontró ninguna implementación de iniciar_streaming_cancion.');

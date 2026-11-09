@@ -1,7 +1,7 @@
 // Configuración del cliente.
 const CONFIG = {
   // URL base de la pasarela de pagos (proyecto servidor).
-  URL_BASE: "http://localhost:8080/api",
+  URL_BASE: "http://localhost:8080/api/pasarela",
 
   // Si el servidor no responde en este tiempo, el intento se considera fallido.
   TIEMPO_ESPERA_MS: 3000,
