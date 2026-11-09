@@ -1,0 +1,39 @@
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f5f5f7; }
+::-webkit-scrollbar-thumb { background: #c7c7cc; border-radius: 3px; }
+
+/* ─── Tarjetas de tipo (son enlaces) ─── */
+a.tarjeta { text-decoration: none; }
+a.tarjeta:hover { border-color: #FA2D48; }
+a:focus-visible,
+button:focus-visible { outline: 2px solid #FA2D48; outline-offset: 2px; }
+
+/* ─── Campos con error de validación ─── */
+input[aria-invalid="true"],
+textarea[aria-invalid="true"] { border-color: #f87171; }
+input[aria-invalid="true"]:focus,
+textarea[aria-invalid="true"]:focus { border-color: #ef4444; box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25); }
+
+/* ─── Zona para elegir / arrastrar el archivo de audio ─── */
+.zona-archivo:hover,
+.zona-archivo.arrastrando { border-color: #FA2D48; background: #FFF0F1; }
+.zona-archivo:has(input:focus-visible) { outline: 2px solid #FA2D48; outline-offset: 2px; }
+.zona-archivo.invalida { border-color: #f87171; }
+
+/* ─── Ficha de confirmación ─── */
+.ficha { display: grid; grid-template-columns: 1fr; }
+.ficha dt { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #888; padding-top: 0.75rem; }
+.ficha dd { color: #111; font-weight: 500; padding: 0.15rem 0 0.75rem; border-bottom: 1px solid #f0f0f0; overflow-wrap: anywhere; }
+.ficha dd:last-child { border-bottom: none; }
+
+@media (min-width: 640px) {
+  .ficha { grid-template-columns: 13rem 1fr; }
+  .ficha dt { padding: 0.75rem 1rem 0.75rem 0; border-bottom: 1px solid #f0f0f0; }
+  .ficha dd { padding: 0.75rem 0; }
+  .ficha dt, .ficha dd { line-height: 1.5rem; }
+  .ficha dt:nth-last-child(2) { border-bottom: none; }
+}
+
+/* ─── Misc ─── */
+.texto-tenue { color: #888; font-style: italic; }

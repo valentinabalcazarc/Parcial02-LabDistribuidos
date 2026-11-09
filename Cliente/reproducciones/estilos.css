@@ -1,0 +1,22 @@
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f5f5f7; }
+::-webkit-scrollbar-thumb { background: #c7c7cc; border-radius: 3px; }
+
+/* ─── Tarjetas de reproducción ─── */
+.tarjeta-reproduccion {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.tarjeta-reproduccion:hover {
+  transform: translateY(-2px);
+  border-color: #FA2D48;
+}
+
+/* ─── Contador de reproducciones ─── */
+.contador-reproducciones {
+  line-height: 1;
+}
+
+/* ─── Misc ─── */
+.texto-tenue { color: #888; font-style: italic; }
+

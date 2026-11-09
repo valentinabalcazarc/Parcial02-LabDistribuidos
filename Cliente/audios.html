@@ -21,6 +21,8 @@
                     class="text-sm font-semibold text-accent border-b-2 border-accent pb-0.5">Catálogo de Audios</a>
                 <a href="suscripciones.html"
                     class="text-sm font-medium text-gray-600 hover:text-accent transition-colors">Suscripciones</a>
+                <a href="reproducciones.html"
+                    class="text-sm font-medium text-gray-600 hover:text-accent transition-colors">Mis Reproducciones</a>
             </nav>
         </div>
     </header>
@@ -34,9 +36,15 @@
     <script src="bundle.js"></script>
     <script src="streamingAudios/funciones.js"></script>
 
+    <!-- SockJS y STOMP.js para la conexión WebSocket con el servidor de reacciones -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+    <script src="reproducciones/historial.js"></script>
     <script src="audios/config.js"></script>
     <script src="audios/tipos.js"></script>
     <script src="audios/api.js"></script>
+    <script src="audios/reacciones.js"></script>
     <script src="audios/app.js"></script>
 </body>
 

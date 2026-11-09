@@ -27,3 +27,19 @@ button:focus-visible { outline: 2px solid #FA2D48; outline-offset: 2px; }
 
 /* ─── Misc ─── */
 .texto-tenue { color: #888; font-style: italic; }
+
+/* ─── Reacciones flotantes ─── */
+.reaccion-flotante {
+  position: absolute;
+  bottom: 0;
+  font-size: 1.5rem;
+  animation: flotar 2s ease-out forwards;
+  pointer-events: none;
+  user-select: none;
+}
+
+@keyframes flotar {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  70%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-90px) scale(1.3); }
+}

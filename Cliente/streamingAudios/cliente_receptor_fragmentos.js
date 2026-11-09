@@ -7,6 +7,19 @@ const ENVOY_HOST = 'http://localhost:8090';
 
 const client = new AudioServicePromiseClient(ENVOY_HOST);
 
+// --- Identificador persistente del cliente ---
+
+/** Genera o recupera un ID de cliente único y persistente para esta sesión/navegador. */
+function obtenerClienteIdPersistente() {
+    const CLAVE = 'reproducciones_cliente_id';
+    let id = localStorage.getItem(CLAVE);
+    if (!id) {
+        id = 'cliente-web-' + Math.random().toString(36).substring(2, 10);
+        localStorage.setItem(CLAVE, id);
+    }
+    return id;
+}
+
 // --- Utilidades del elemento <audio> ---
 
 /** Libera el Blob que tenga cargado el reproductor (cada Blob URL ocupa memoria hasta que se revoca). */
@@ -55,8 +68,13 @@ function iniciar_streaming_cancion(titulo, formato, opciones = {}) {
     request.setTitulo(titulo);
     request.setFormato(formato);
 
-    console.log("Solicitud preparada:", request.toObject());
-    const stream = client.enviarCancionMedianteStream(request, {});
+    // Enviar el ID del cliente como metadata gRPC para que el servidor
+    // lo use como identificador en las estadísticas de reproducción.
+    const clienteId = obtenerClienteIdPersistente();
+    const metadata = { 'x-client-id': clienteId };
+
+    console.log("Solicitud preparada:", request.toObject(), "Cliente:", clienteId);
+    const stream = client.enviarCancionMedianteStream(request, metadata);
 
     // Maneja la llegada de cada fragmento
     stream.on('data', (response) => {
